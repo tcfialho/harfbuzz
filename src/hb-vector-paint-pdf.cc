@@ -1237,7 +1237,11 @@ hb_pdf_add_sweep_patch (hb_vector_buf_t *mesh,
 			float a1, hb_color_t c1_in)
 {
   const float R = 32767.f;
-  const float eps = 0.5f;
+  /* The patches meet at the center.  The mesh coordinates are 16-bit
+   * over a range 65536 units wide, a grid of one unit, so an inner
+   * radius smaller than that only rounded each patch's inner end to
+   * a different grid point and left the square between them unpainted. */
+  const float eps = 0.f;
   const float MAX_SECTOR = (float) M_PI / 2.f;
 
   int num_splits = (int) ceilf (fabsf (a1 - a0) / MAX_SECTOR);
