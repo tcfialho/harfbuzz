@@ -237,6 +237,19 @@ struct hb_buffer_t
   unsigned int lookahead_len () const { return len - idx; }
   uint8_t next_serial () { return ++serial ? serial : ++serial; }
 
+  HB_ALWAYS_INLINE void add_fast (hb_codepoint_t  codepoint,
+				  unsigned int    cluster)
+  {
+    assert (len < allocated);
+    hb_glyph_info_t *glyph = &info[len];
+    glyph->codepoint = codepoint;
+    glyph->mask = 0;
+    glyph->cluster = cluster;
+    glyph->var1.u32 = 0;
+    glyph->var2.u32 = 0;
+    len++;
+  }
+
   HB_INTERNAL void add (hb_codepoint_t  codepoint,
 			unsigned int    cluster);
   HB_INTERNAL void add_info (const hb_glyph_info_t &glyph_info);

@@ -853,7 +853,19 @@ hb_ot_map_glyphs_fast (hb_buffer_t  *buffer)
   /* Normalization process sets up normalizer_glyph_index(), we just copy it. */
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
-  for (unsigned int i = 0; i < count; i++)
+  unsigned int i = 0;
+  for (; i + 4 <= count; i += 4)
+  {
+    hb_codepoint_t g0 = info[i + 0].normalizer_glyph_index();
+    hb_codepoint_t g1 = info[i + 1].normalizer_glyph_index();
+    hb_codepoint_t g2 = info[i + 2].normalizer_glyph_index();
+    hb_codepoint_t g3 = info[i + 3].normalizer_glyph_index();
+    info[i + 0].codepoint = g0;
+    info[i + 1].codepoint = g1;
+    info[i + 2].codepoint = g2;
+    info[i + 3].codepoint = g3;
+  }
+  for (; i < count; i++)
     info[i].codepoint = info[i].normalizer_glyph_index();
 
   buffer->content_type = HB_BUFFER_CONTENT_TYPE_GLYPHS;

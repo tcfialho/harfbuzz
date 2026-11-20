@@ -140,7 +140,10 @@ struct CursivePosFormat1
     TRACE_APPLY (this);
     hb_buffer_t *buffer = c->buffer;
 
-    const EntryExitRecord &this_record = entryExitRecord[(this+coverage).get_coverage  (buffer->cur().codepoint)];
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint);
+    if (index == NOT_COVERED) return_trace (false);
+
+    const EntryExitRecord &this_record = entryExitRecord[index];
     if (!this_record.entryAnchor ||
 	unlikely (!this_record.entryAnchor.sanitize (&c->sanitizer, this))) return_trace (false);
     hb_barrier ();
@@ -154,7 +157,14 @@ struct CursivePosFormat1
       return_trace (false);
     }
 
-    const EntryExitRecord &prev_record = entryExitRecord[(this+coverage).get_coverage  (buffer->info[skippy_iter.idx].codepoint)];
+    unsigned int prev_index = (this+coverage).get_coverage (buffer->info[skippy_iter.idx].codepoint);
+    if (prev_index == NOT_COVERED)
+    {
+      buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
+      return_trace (false);
+    }
+
+    const EntryExitRecord &prev_record = entryExitRecord[prev_index];
     if (!prev_record.exitAnchor ||
 	unlikely (!prev_record.exitAnchor.sanitize (&c->sanitizer, this)))
     {

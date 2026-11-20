@@ -210,8 +210,25 @@ HB_MARK_AS_FLAG_T (hb_unicode_props_flags_t);
 static inline void
 _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 {
-  hb_unicode_funcs_t *unicode = buffer->unicode;
   unsigned int u = info->codepoint;
+
+  if (likely (u < 0x80u && buffer->unicode == hb_unicode_funcs_get_default ()))
+  {
+    static constexpr uint8_t ascii_gen_cat[128] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      29, 21, 21, 21, 23, 21, 21, 21, 22, 18, 21, 25, 21, 17, 21, 21,
+      13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 21, 21, 25, 25, 25, 21,
+      21, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+      9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 22, 21, 18, 24, 16,
+      24, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 22, 25, 18, 25, 0,
+    };
+    info->unicode_props() = ascii_gen_cat[u];
+    return;
+  }
+
+  hb_unicode_funcs_t *unicode = buffer->unicode;
   unsigned int gen_cat = (unsigned int) unicode->general_category (u);
   unsigned int props = gen_cat;
 

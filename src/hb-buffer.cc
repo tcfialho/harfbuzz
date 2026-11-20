@@ -352,18 +352,8 @@ void
 hb_buffer_t::add (hb_codepoint_t  codepoint,
 		  unsigned int    cluster)
 {
-  hb_glyph_info_t *glyph;
-
   if (unlikely (!ensure (len + 1))) return;
-
-  glyph = &info[len];
-
-  hb_memset (glyph, 0, sizeof (*glyph));
-  glyph->codepoint = codepoint;
-  glyph->mask = 0;
-  glyph->cluster = cluster;
-
-  len++;
+  add_fast (codepoint, cluster);
 }
 
 void
@@ -1818,7 +1808,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
 
   if (unlikely (item_length < 0 ||
 		item_length > INT_MAX / 8 ||
-		!buffer->ensure (buffer->len + item_length * sizeof (T) / 4)))
+		!buffer->ensure (buffer->len + item_length)))
     return;
 
   /* If buffer is empty and pre-context provided, install it.
@@ -1849,7 +1839,7 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
     hb_codepoint_t u;
     const T *old_next = next;
     next = utf_t::next (next, end, &u, replacement);
-    buffer->add (u, old_next - (const T *) text);
+    buffer->add_fast (u, old_next - (const T *) text);
   }
 
   /* Add post-context */
